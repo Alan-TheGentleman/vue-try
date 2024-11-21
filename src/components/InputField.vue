@@ -1,18 +1,12 @@
 <template>
   <div class="input-field">
-    <input
-      :type="type"
-      :placeholder="placeholder"
-      v-model="modelValue"
-      @input="$emit('update:modelValue', modelValue)"
-      :required
-    />
+    <input :type="type" :placeholder="placeholder" v-model="computedValue" :required />
   </div>
   <p v-if="error" class="error-message">{{ error }}</p>
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   modelValue: {
@@ -39,14 +33,14 @@ const props = defineProps({
 
 const emits = defineEmits(['update:modelValue'])
 
-const modelValue = ref(props.modelValue)
-
-watch(
-  () => props.modelValue,
-  (newValue) => {
-    modelValue.value = newValue
+const computedValue = computed({
+  get() {
+    return props.modelValue
   },
-)
+  set(value) {
+    emits('update:modelValue', value)
+  },
+})
 </script>
 
 <style module lang="scss">

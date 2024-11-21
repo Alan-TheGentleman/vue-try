@@ -2,6 +2,7 @@ import axios from 'axios'
 import MockAdapter from 'axios-mock-adapter'
 import { type Character } from '@/models'
 import { mockCharacters } from './mocks/charactersMock'
+import { useAuthStore } from '@/stores'
 
 const apiClient = axios.create({
   baseURL: 'http://localhost:4000',
@@ -22,9 +23,11 @@ const mock = new MockAdapter(apiClient)
 // Simular el endpoint de registro
 mock.onPost('/register').reply((config) => {
   const { email, password } = JSON.parse(config.data)
+  const authStore = useAuthStore()
 
   if (email && password) {
     const token = 'mocked_token'
+    authStore.setToken(token)
     return [200, { token }]
   } else {
     return [400, { message: 'Invalid email or password' }]
@@ -34,9 +37,11 @@ mock.onPost('/register').reply((config) => {
 // Simular el endpoint de login
 mock.onPost('/login').reply((config) => {
   const { email, password } = JSON.parse(config.data)
+  const authStore = useAuthStore()
 
   if (email === 'test@example.com' && password === 'password') {
     const token = 'mocked_token'
+    authStore.setToken(token)
     return [200, { token }]
   } else {
     return [401, { message: 'Invalid email or password' }]
