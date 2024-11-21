@@ -7,19 +7,12 @@
 
 <script lang="ts" setup>
 import { useCharacterStore } from '@/stores/useCharactersStore'
-import { onMounted } from 'vue'
+import { computed } from 'vue'
 import CharacterList from './CharactersList/CharactersList.vue'
 
 const charactersStore = useCharacterStore()
-const { formattedCharacters: characters } = charactersStore
 
-const fetchCharacters = async () => {
-  await charactersStore.fetchCharacters()
-}
-
-onMounted(() => {
-  fetchCharacters()
-})
+const characters = computed(() => charactersStore.formattedCharacters)
 </script>
 
 <style module lang="scss"></style>

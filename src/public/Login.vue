@@ -1,38 +1,77 @@
 <template>
   <form @submit.prevent="handleLogin">
-    <input v-model="email" type="email" placeholder="Email" required />
-    <input v-model="password" type="password" placeholder="Password" required />
-    <p v-if="error" class="error-message">{{ error }}</p>
+    <InputField
+      v-model="formData.email.value"
+      type="email"
+      placeholder="Email"
+      :error="formData.email.error"
+      required
+    />
+    <InputField
+      v-model="formData.password.value"
+      type="password"
+      placeholder="Password"
+      :error="formData.password.error"
+      required
+    />
     <button type="submit">Login</button>
   </form>
 </template>
 
 <script lang="ts" setup>
+import InputField from '@/components/InputField.vue'
 import apiClient from '@/interceptors/axios'
-import { useAuthStore } from '@/stores'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { z } from 'zod'
 
-const email = ref('')
-const password = ref('')
-const error = ref('')
+const loginSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address' }),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters long' }),
+})
+
+const formData = ref({
+  email: {
+    value: '',
+    error: '',
+  },
+  password: {
+    value: '',
+    error: '',
+  },
+})
+
 const router = useRouter()
-const authStore = useAuthStore()
 
 const handleLogin = async () => {
   try {
-    error.value = ''
-    const response = await apiClient.post('/login', {
-      email: email.value,
-      password: password.value,
+    Object.keys(formData.value).forEach((key) => {
+      formData.value[key as keyof typeof formData.value].error = ''
     })
 
-    authStore.setToken(response.data.token)
+    const result = loginSchema.safeParse({
+      email: formData.value.email.value,
+      password: formData.value.password.value,
+    })
+
+    if (!result.success) {
+      result.error.errors.forEach((e) => {
+        const field = e.path[0] as keyof typeof formData.value
+        if (formData.value[field]) {
+          formData.value[field].error = e.message
+        }
+      })
+      return
+    }
+
+    await apiClient.post('/login', {
+      email: formData.value.email.value,
+      password: formData.value.password.value,
+    })
 
     router.push('/characters')
   } catch (err: unknown) {
     console.error('Error al iniciar sesión', err)
-    error.value = 'Invalid email or password'
   }
 }
 </script>

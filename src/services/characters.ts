@@ -1,18 +1,24 @@
+import { type Character } from '@/models'
 import apiClient from '@/interceptors/axios'
-import type { Character } from '@/models/character.model'
 
-export const getCharacters = () => {
-  return apiClient.get('/character')
+const API_URL = '/characters'
+
+export const getCharacters = async (): Promise<{ data: Character[] }> => {
+  const response = await apiClient.get(API_URL)
+  return { data: response.data }
 }
 
-export const createCharacter = (characterData: Character) => {
-  return apiClient.post('/character', characterData)
+export const addCharacter = async (characterData: Character): Promise<{ data: Character }> => {
+  const response = await apiClient.post(API_URL, characterData)
+  return { data: response.data }
 }
 
-export const updateCharacter = (id: number, characterData: Character) => {
-  return apiClient.put(`/character/${id}`, characterData)
+export const updateCharacter = async (characterData: Character): Promise<{ data: Character }> => {
+  const response = await apiClient.put(`${API_URL}/${characterData.id}`, characterData)
+  return { data: response.data }
 }
 
-export const deleteCharacter = (id: number) => {
-  return apiClient.delete(`/character/${id}`)
+export const deleteCharacter = async (id: number): Promise<{ data: number }> => {
+  await apiClient.delete(`${API_URL}/${id}`)
+  return { data: id }
 }
